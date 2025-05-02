@@ -15,10 +15,10 @@ import { createFromJSON } from '@libp2p/peer-id-factory';
 import { createLibp2p } from 'libp2p';
 import { noise } from '@chainsafe/libp2p-noise';
 import { webSockets } from '@libp2p/websockets';
+import { tcp } from '@libp2p/tcp';
 import { yamux } from '@chainsafe/libp2p-yamux';
 import { gossipsub } from '@chainsafe/libp2p-gossipsub';
 import { identify } from '@libp2p/identify';
-import { multiaddr } from '@multiformats/multiaddr'; // required for address formatting
 
 async function createDriverNode() {
   const peerIdJson = JSON.parse(fs.readFileSync('./peer-id.json'));
@@ -26,7 +26,7 @@ async function createDriverNode() {
 
   const node = await createLibp2p({
     peerId,
-    transports: [webSockets()],
+    transports: [webSockets(), tcp()],
     streamMuxers: [yamux()],
     connectionEncrypters: [noise()],
     addresses: {
@@ -41,22 +41,13 @@ async function createDriverNode() {
   console.log(`✅ Driver Peer ID: ${node.peerId.toString()}`);
   console.log(`✅ Listening on:`);
   node.getMultiaddrs().forEach(addr => {
-    console.log(`${addr.toString()}/p2p/${node.peerId.toString()}`);
+    console.log(`${addr.toString()}`);
   });
-
-  // ✅ Set our own multiaddr to peerstore
-  try {
-    const addr = node.getMultiaddrs()[0];
-    await node.peerstore.addressBook.set(driverPeerId, [multiaddr(driverAddr)]);
-    console.log('📌 Multiaddr added to peerstore.');
-  } catch (err) {
-    console.error('❌ Failed to add multiaddr to peerstore:', err);
-  }
 
   // Save multiaddr and peerId to file
   const driverInfo = {
     peerId: node.peerId.toString(),
-    multiaddr: node.getMultiaddrs()[0].encapsulate(`/p2p/${node.peerId.toString()}`).toString()
+    multiaddr: node.getMultiaddrs()[0].toString()
   };
   fs.writeFileSync('driver-info.json', JSON.stringify(driverInfo, null, 2));
   console.log('📝 driver-info.json file created!');
@@ -67,7 +58,7 @@ async function createDriverNode() {
   const topic = 'ride-requests';
   const pubsub = node.services.pubsub;
 
-  await pubsub.subscribe(topic);
+  pubsub.subscribe(topic);
   pubsub.addEventListener('message', async (evt) => {
     const msg = JSON.parse(new TextDecoder().decode(evt.detail.data));
 
