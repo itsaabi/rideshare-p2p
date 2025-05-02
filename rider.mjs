@@ -13,6 +13,7 @@ if (typeof globalThis.CustomEvent !== 'function') {
 import fs from 'fs';
 import { createLibp2p } from 'libp2p';
 import { webSockets } from '@libp2p/websockets';
+import { tcp } from '@libp2p/tcp';
 import { yamux } from '@chainsafe/libp2p-yamux';
 import { gossipsub } from '@chainsafe/libp2p-gossipsub';
 import { identify } from '@libp2p/identify';
@@ -21,13 +22,16 @@ import { noise } from '@chainsafe/libp2p-noise';
 
 async function createRiderNode() {
   const node = await createLibp2p({
-    transports: [webSockets({ filter: () => true })],
+    transports: [webSockets(), tcp()],
     streamMuxers: [yamux()],
     connectionEncrypters: [noise()], // ✅ Manually initialized TLS
     services: {
       identify: identify(),
       pubsub: gossipsub()
-    }
+    },
+    connectionGater: {
+      denyDialMultiaddr: () => false
+    },
   });
 
   console.log(`✅ Rider Peer ID: ${node.peerId.toString()}`);
@@ -36,12 +40,13 @@ async function createRiderNode() {
     console.log(addr.toString());
   });
 
-  console.log(`🔒 Active Encryption Protocols:`, node.getProtocols());
+  console.log(`🔒 Active Protocols:`, node.getProtocols());
 
   const topic = 'ride-requests';
 
   // Subscribe to receive responses
-  await node.services.pubsub.subscribe(topic);
+  node.services.pubsub.subscribe(topic);
+
   node.services.pubsub.addEventListener('message', (evt) => {
     const data = JSON.parse(new TextDecoder().decode(evt.detail.data));
     if (data.type === 'ride-accepted') {
@@ -69,6 +74,7 @@ async function createRiderNode() {
 
   // **Connect to driver**
   try {
+    console.log(driverMultiaddr);
     await node.dial(driverMultiaddr);
     console.log('🔌 Connected to driver.');
   } catch (err) {

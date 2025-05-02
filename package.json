@@ -17,6 +17,7 @@
     "@libp2p/identify": "^3.0.29",
     "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/plaintext": "^2.0.22",
+    "@libp2p/tcp": "^10.1.10",
     "@libp2p/tls": "^2.2.0",
     "@libp2p/websockets": "^9.2.10",
     "event-target-shim": "^6.0.2",
