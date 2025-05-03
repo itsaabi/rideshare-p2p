@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ride Sharing App</title>
+
+    <!-- Google Maps API ke baad yeh line add karein -->
+    <script src="https://cdn.jsdelivr.net/npm/ipfs/dist/index.min.js"></script>
+    <script src="https://unpkg.com/ipfs-http-client@latest/dist/index.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    />
+    <style>
+      /* General Styles */
+      :root {
+        --primary-color: #4a6bff;
+        --secondary-color: #ff6b6b;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --text-color: #333;
+        --text-light: #6c757d;
+        --border-radius: 12px;
+        --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+
+        /* RGB Animation Colors */
+        --rgb-primary: rgba(108, 77, 246, 0.8);
+        --rgb-secondary: rgba(255, 125, 41, 0.8);
+        --rgb-tertiary: rgba(0, 255, 170, 0.8);
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        color: var(--text-color);
+        height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Map Modal Styles */
+      .map-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 1002;
+      }
+
+      .map-container {
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        flex-grow: 1;
+      }
+
+      /* Location Panel Styles - Updated */
+      .location-panel {
+        position: absolute;
+        background: linear-gradient(to right, #efe8e6, #f3bb90);
+        top: 0;
+        left: 0;
+        width: 30%;
+        height: 100%;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+        box-sizing: border-box;
+        overflow-y: auto;
+      }
+
+      .location-panel.collapsed {
+        transform: translateX(-100%);
+      }
+
+      /* Panel Toggle Styles - Updated to be separate */
+      .panel-toggle-container {
+        position: absolute;
+        top: 20px;
+        left: 30%;
+        z-index: 1001;
+        transition: left 0.3s ease;
+      }
+
+      .location-panel.collapsed ~ .panel-toggle-container {
+        left: 0;
+      }
+
+      .panel-toggle {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-color);
+        border-radius: 0 8px 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        color: white;
+      }
+
+      .panel-toggle i {
+        transition: transform 0.3s ease;
+      }
+
+      .location-panel.collapsed ~ .panel-toggle-container .panel-toggle i {
+        transform: rotate(180deg);
+      }
+
+      /* Location Input Styles */
+      .location-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .input-group {
+        position: relative;
+        width: 100%;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: var(--text-light);
+        font-weight: 500;
+      }
+
+      .location-input {
+        width: 100%;
+        padding: 14px 15px 14px 45px;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        font-size: 15px;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+        transition: var(--transition);
+      }
+
+      .location-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(74, 107, 255, 0.2);
+      }
+
+      .origin-input {
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .destination-input {
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+
+      .location-input::placeholder {
+        color: #aaa;
+        font-weight: 400;
+      }
+
+      .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 40px;
+        color: #888;
+        font-size: 18px;
+      }
+
+      .origin-icon {
+        color: var(--primary-color);
+      }
+
+      .destination-icon {
+        color: var(--secondary-color);
+      }
+
+      /* Vehicle Selection Styles */
+      .vehicle-selection {
+        margin-top: 15px;
+      }
+
+      .vehicle-selection h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .vehicle-options {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .vehicle-option {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .vehicle-option.selected {
+        border-color: var(--primary-color);
+        background-color: rgba(74, 107, 255, 0.1);
+      }
+
+      .vehicle-icon {
+        font-size: 24px;
+        margin-bottom: 5px;
+      }
+
+      .vehicle-name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .vehicle-price {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-top: 3px;
+      }
+
+      .seat-selection {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .seat-selection label {
+        font-size: 14px;
+        color: var(--text-light);
+      }
+
+      .seat-selector {
+        display: flex;
+        gap: 5px;
+      }
+
+      .seat-btn {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #e0e0e0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .seat-btn.selected {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      /* Ride Sharing Section - Updated */
+      .ride-sharing-section {
+        margin-top: 15px;
+        display: none;
+      }
+
+      .ride-sharing-section.active {
+        display: block;
+      }
+
+      .ride-sharing-btn {
+        background-color: white;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        border-radius: var(--border-radius);
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .ride-sharing-btn:hover {
+        background-color: rgba(74, 107, 255, 0.1);
+      }
+
+      .ride-sharing-btn i {
+        transition: transform 0.3s ease;
+      }
+
+      .ride-sharing-btn:hover i {
+        transform: translateX(3px);
+      }
+
+      .ride-sharing-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Ride Sharing Modal */
+      .ride-sharing-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1006;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .ride-sharing-container {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        width: 85%;
+        max-width: 350px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .ride-sharing-container h3 {
+        margin-top: 0;
+        color: var(--text-color);
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      .ride-sharing-container p {
+        color: var(--text-light);
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .seats-selection {
+        margin-bottom: 20px;
+      }
+
+      .seats-selection label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+
+      .seats-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        font-size: 16px;
+        text-align: center;
+      }
+
+      .ride-sharing-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .ride-sharing-confirm {
+        flex: 1;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .ride-sharing-cancel {
+        flex: 1;
+        background-color: #f0f0f0;
+        color: var(--text-color);
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* Buttons */
+      .btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .btn:hover {
+        background-color: #3a5bef;
+      }
+
+      .btn i {
+        transition: transform 0.3s ease;
+      }
+
+      .btn:hover i {
+        transform: translateX(3px);
+      }
+
+      .btn-secondary {
+        background-color: white;
+        color: var(--text-color);
+        border: 1px solid #e0e0e0;
+      }
+
+      .btn-secondary:hover {
+        background-color: #f8f9fa;
+      }
+
+      .btn-success {
+        background-color: var(--success-color);
+      }
+
+      .btn-success:hover {
+        background-color: #218838;
+      }
+
+      .btn-danger {
+        background-color: var(--danger-color);
+      }
+
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+
+      .btn-warning {
+        background-color: var(--warning-color);
+        color: var(--text-color);
+      }
+
+      .btn-warning:hover {
+        background-color: #e0a800;
+      }
+
+      #get-directions-btn {
+        margin-top: 20px;
+      }
+
+      .swap-locations {
+        position: absolute;
+        right: 10px;
+        top: 40px;
+        background: #f0f0f0;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .swap-locations:hover {
+        background: #e0e0e0;
+        transform: rotate(180deg);
+      }
+
+      /* Ride Info Section */
+      .ride-info {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-top: 20px;
+        padding: 0;
+        transition: var(--transition);
+        max-height: 400px;
+        overflow: hidden;
+      }
+
+      .ride-info.collapsed {
+        max-height: 50px;
+      }
+
+      .ride-info-header {
+        padding: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        border-radius: var(--border-radius);
+      }
+
+      .ride-info-header h3 {
+        margin: 0;
+        font-size: 16px;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .ride-info-header i {
+        transition: transform 0.3s ease;
+      }
+
+      .ride-info.collapsed .ride-info-header i {
+        transform: rotate(180deg);
+      }
+
+      .ride-info-content {
+        padding: 15px;
+      }
+
+      .ride-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .ride-detail:last-child {
+        margin-bottom: 0;
+      }
+
+      .detail-label {
+        font-weight: 500;
+        color: var(--text-light);
+      }
+
+      .detail-value {
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .distance-value {
+        color: var(--primary-color);
+      }
+
+      .fare-value {
+        color: var(--success-color);
+        font-size: 18px;
+      }
+
+      /* Payment Input */
+      .payment-input-group {
+        margin-top: 15px;
+      }
+
+      .payment-input {
+        width: 100%;
+        padding: 14px 15px 14px 45px;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        font-size: 15px;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+        transition: var(--transition);
+      }
+
+      .payment-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(74, 107, 255, 0.2);
+      }
+
+      .payment-icon {
+        position: absolute;
+        left: 15px;
+        top: 40px;
+        color: #888;
+        font-size: 18px;
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1001;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        text-align: center;
+      }
+
+      .loading-spinner i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Action Buttons */
+      .action-buttons {
+        position: absolute;
+        bottom: 20px;
+        left: 427px;
+        right: 58px;
+        display: flex;
+        gap: 15px;
+        z-index: 1000;
+      }
+
+      .action-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: var(--border-radius);
+        font-family: "Poppins", sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: var(--transition);
+        box-shadow: var(--box-shadow);
+      }
+
+      .action-btn i {
+        transition: transform 0.3s ease;
+      }
+
+      .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      .action-btn:hover i {
+        transform: translateX(3px);
+      }
+
+      .confirm-btn {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .confirm-btn:hover {
+        background-color: #3a5bef;
+      }
+
+      .cancel-btn {
+        background-color: white;
+        color: var(--text-color);
+      }
+
+      .cancel-btn:hover {
+        background-color: #f5f5f5;
+      }
+
+      /* Permission Modal Styles */
+      .permission-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1003;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .permission-container {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        width: 85%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transform: translateY(20px);
+        opacity: 0;
+        animation: fadeInUp 0.4s forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .permission-container h3 {
+        margin-top: 0;
+        color: var(--text-color);
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      .permission-container p {
+        color: var(--text-light);
+        margin-bottom: 25px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .permission-buttons {
+        display: flex;
+        gap: 15px;
+      }
+
+      .permission-btn {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: var(--border-radius);
+        font-family: "Poppins", sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .allow-btn {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .allow-btn:hover {
+        background-color: #3a5bef;
+      }
+
+      .deny-btn {
+        background-color: #f0f0f0;
+        color: var(--text-color);
+      }
+
+      .deny-btn:hover {
+        background-color: #e0e0e0;
+      }
+
+      /* Ride Request Modal - Enhanced with RGB Effects */
+      .request-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1004;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .request-container {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        width: 85%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .request-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--rgb-primary),
+          var(--rgb-secondary),
+          var(--rgb-tertiary),
+          var(--rgb-primary)
+        );
+        background-size: 300% 100%;
+        animation: rgbGradient 5s linear infinite;
+      }
+
+      @keyframes rgbGradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .request-container h3 {
+        margin-top: 0;
+        color: var(--text-color);
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      .rider-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .rider-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+        border: 3px solid var(--primary-color);
+        box-shadow: 0 0 15px rgba(74, 107, 255, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .rider-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(74, 107, 255, 0.5);
+      }
+
+      .rider-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 5px 0;
+        color: var(--text-color);
+      }
+
+      .rider-phone {
+        font-size: 14px;
+        color: var(--text-light);
+        margin-bottom: 5px;
+      }
+
+      .ride-summary {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 15px;
+        margin: 15px 0;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ride-summary::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(108, 77, 246, 0.05) 0%,
+          rgba(255, 125, 41, 0.05) 100%
+        );
+        z-index: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .ride-summary:hover::after {
+        opacity: 1;
+      }
+
+      .ride-summary-item {
+        display: flex;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .ride-summary-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .ride-summary-label {
+        font-weight: 500;
+        color: var(--text-light);
+        min-width: 100px;
+      }
+
+      .ride-summary-value {
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .vehicle-summary {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .vehicle-summary-icon {
+        font-size: 20px;
+        color: var(--primary-color);
+      }
+
+      .request-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      /* Enhanced Buttons with RGB Effects */
+      .enhanced-btn {
+        position: relative;
+        overflow: hidden;
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        z-index: 1;
+      }
+
+      .enhanced-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--rgb-primary),
+          var(--rgb-secondary),
+          var(--rgb-tertiary)
+        );
+        background-size: 200% 200%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+      }
+
+      .enhanced-btn:hover::before {
+        opacity: 0.9;
+        animation: rgbGradient 3s ease infinite;
+      }
+
+      .enhanced-btn i {
+        transition: transform 0.3s ease;
+      }
+
+      .enhanced-btn:hover i {
+        transform: translateX(3px);
+      }
+
+      .enhanced-btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .enhanced-btn-secondary {
+        background-color: white;
+        color: var(--text-color);
+        border: 1px solid #e0e0e0;
+      }
+
+      .enhanced-btn-secondary:hover {
+        color: white;
+        border-color: transparent;
+      }
+
+      /* Driver Match Modal */
+      .driver-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1005;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .driver-container {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        width: 85%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .driver-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--rgb-primary),
+          var(--rgb-secondary),
+          var(--rgb-tertiary),
+          var(--rgb-primary)
+        );
+        background-size: 300% 100%;
+        animation: rgbGradient 5s linear infinite;
+      }
+
+      .driver-container h3 {
+        margin-top: 0;
+        color: var(--text-color);
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      .driver-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .driver-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+        border: 3px solid var(--primary-color);
+        box-shadow: 0 0 20px rgba(74, 107, 255, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .driver-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px rgba(74, 107, 255, 0.5);
+      }
+
+      .driver-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 5px 0;
+      }
+
+      .driver-rating {
+        color: var(--warning-color);
+        margin-bottom: 10px;
+      }
+
+      .driver-car {
+        font-size: 14px;
+        color: var(--text-light);
+        margin-bottom: 5px;
+      }
+
+      .driver-fare {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 15px 0;
+        color: var(--primary-color);
+      }
+
+      .driver-eta {
+        font-size: 14px;
+        color: var(--text-light);
+        margin-bottom: 20px;
+      }
+
+      .driver-buttons {
+        display: flex;
+        gap: 15px;
+      }
+
+      /* Animations */
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .location-panel {
+          width: 80%;
+        }
+
+        .panel-toggle-container {
+          left: 80%;
+        }
+
+        .location-panel.collapsed ~ .panel-toggle-container {
+          left: 0;
+        }
+
+        .action-buttons {
+          left: 10px;
+          right: 10px;
+          bottom: 80px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .location-panel {
+          width: 90%;
+          height: 600px;
+        }
+
+        .panel-toggle-container {
+          left: 90%;
+        }
+
+        .location-panel.collapsed ~ .panel-toggle-container {
+          left: 0;
+        }
+
+        .action-buttons {
+          left: 10px;
+          right: 10px;
+          bottom: 10px;
+        }
+
+        .action-btn {
+          padding: 14px;
+          font-size: 15px;
+        }
+
+        .input-icon {
+          top: 35px;
+          font-size: 16px;
+        }
+
+        .vehicle-options {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Map Modal -->
+    <div class="map-modal" id="map-modal">
+      <div class="map-container">
+        <div id="map"></div>
+
+        <!-- Location Panel - Now without the toggle inside -->
+        <div class="location-panel" id="location-panel">
+          <div class="location-inputs">
+            <div class="input-group">
+              <label for="origin-input">Current Location</label>
+              <i class="fas fa-map-marker-alt input-icon origin-icon"></i>
+              <input
+                type="text"
+                id="origin-input"
+                class="location-input origin-input"
+                placeholder="Detecting your location..."
+                readonly
+              />
+            </div>
+            <div class="input-group">
+              <label for="destination-input">Destination</label>
+              <i class="fas fa-flag-checkered input-icon destination-icon"></i>
+              <input
+                type="text"
+                id="destination-input"
+                class="location-input destination-input"
+                placeholder="Where do you want to go?"
+              />
+              <div class="swap-locations" id="swap-locations">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+            </div>
+
+            <!-- Vehicle Selection -->
+            <div class="vehicle-selection">
+              <h3><i class="fas fa-car"></i> Select Vehicle Type</h3>
+              <div class="vehicle-options">
+                <div
+                  class="vehicle-option"
+                  id="bike-option"
+                  data-type="bike"
+                  data-price="50"
+                >
+                  <div class="vehicle-icon">
+                    <i class="fas fa-motorcycle"></i>
+                  </div>
+                  <div class="vehicle-name">Bike</div>
+                  <div class="vehicle-price">From PKR 50</div>
+                </div>
+                <div
+                  class="vehicle-option"
+                  id="auto-option"
+                  data-type="auto"
+                  data-price="100"
+                >
+                  <div class="vehicle-icon">
+                    <i class="fas fa-rickshaw"></i>
+                  </div>
+                  <div class="vehicle-name">Auto</div>
+                  <div class="vehicle-price">From PKR 100</div>
+                </div>
+                <div
+                  class="vehicle-option"
+                  id="car-option"
+                  data-type="car"
+                  data-price="150"
+                >
+                  <div class="vehicle-icon">
+                    <i class="fas fa-car-side"></i>
+                  </div>
+                  <div class="vehicle-name">Car</div>
+                  <div class="vehicle-price">From PKR 150</div>
+                </div>
+              </div>
+
+              <!-- Seat Selection (only shown for auto and car) -->
+              <div
+                class="seat-selection"
+                id="seat-selection"
+                style="display: none"
+              >
+                <label>Seats:</label>
+                <div class="seat-selector">
+                  <div class="seat-btn" data-seats="1">1</div>
+                  <div class="seat-btn" data-seats="2">2</div>
+                  <div class="seat-btn selected" data-seats="3">3</div>
+                  <div class="seat-btn" data-seats="4">4</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ride Sharing Section -->
+            <div class="ride-sharing-section" id="ride-sharing-section">
+              <h3><i class="fas fa-users"></i> Ride Sharing</h3>
+              <button class="ride-sharing-btn" id="ride-sharing-btn" disabled>
+                <i class="fas fa-share-alt"></i> Share Ride
+              </button>
+            </div>
+
+            <!-- Payment Input Field -->
+            <div class="input-group payment-input-group">
+              <label for="payment-input">Enter Payment Amount (PKR)</label>
+              <i class="fas fa-money-bill-wave payment-icon"></i>
+              <input
+                type="number"
+                id="payment-input"
+                class="payment-input"
+                placeholder="Enter amount in PKR"
+              />
+            </div>
+          </div>
+
+          <button id="get-directions-btn" class="btn">
+            <i class="fas fa-directions"></i> Find Route
+          </button>
+
+          <!-- Ride Info Section -->
+          <div class="ride-info collapsed" id="ride-info">
+            <div class="ride-info-header" id="ride-info-toggle">
+              <h3><i class="fas fa-route"></i> Ride Details</h3>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="ride-info-content" id="ride-details">
+              <div class="ride-detail">
+                <span class="detail-label">From:</span>
+                <span class="detail-value" id="ride-from">-</span>
+              </div>
+              <div class="ride-detail">
+                <span class="detail-label">To:</span>
+                <span class="detail-value" id="ride-to">-</span>
+              </div>
+              <div class="ride-detail">
+                <span class="detail-label">Distance:</span>
+                <span class="detail-value distance-value" id="ride-distance"
+                  >-</span
+                >
+              </div>
+              <div class="ride-detail">
+                <span class="detail-label">Duration:</span>
+                <span class="detail-value" id="ride-duration">-</span>
+              </div>
+              <div class="ride-detail">
+                <span class="detail-label">Vehicle:</span>
+                <span class="detail-value" id="ride-vehicle">-</span>
+              </div>
+              <div class="ride-detail">
+                <span class="detail-label">Seats:</span>
+                <span class="detail-value" id="ride-seats">-</span>
+              </div>
+              <div class="ride-detail">
+                <span class="detail-label">Your Fare:</span>
+                <span class="detail-value fare-value" id="ride-fare"
+                  >PKR 0.00</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Independent Panel Toggle Container -->
+        <div class="panel-toggle-container">
+          <div class="panel-toggle" id="panel-toggle">
+            <i class="fas fa-chevron-left"></i>
+          </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loading-spinner">
+          <i class="fas fa-spinner"></i>
+          <p>Finding best route...</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="action-btn cancel-btn" id="cancel-btn">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button class="action-btn confirm-btn" id="confirm-ride-btn" disabled>
+            <i class="fas fa-car"></i> Request Ride
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location Permission Modal -->
+    <div class="permission-modal" id="permission-modal">
+      <div class="permission-container">
+        <h3>Enable Location Services</h3>
+        <p>To find rides near you, we need access to your location</p>
+        <div class="permission-buttons">
+          <button class="permission-btn deny-btn" id="deny-location">
+            Not Now
+          </button>
+          <button class="permission-btn allow-btn" id="allow-location">
+            Allow Location
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ride Request Modal -->
+    <div class="request-modal" id="request-modal">
+      <div class="request-container">
+        <h3>Confirm Ride Request</h3>
+
+        <div class="rider-info">
+          <img src="" alt="Rider" class="rider-avatar" id="rider-avatar" />
+          <h4 class="rider-name" id="rider-name">Loading...</h4>
+          <p class="rider-phone" id="rider-phone">Loading...</p>
+        </div>
+
+        <div class="ride-summary">
+          <div class="ride-summary-item">
+            <span class="ride-summary-label">From:</span>
+            <span class="ride-summary-value" id="request-from">-</span>
+          </div>
+          <div class="ride-summary-item">
+            <span class="ride-summary-label">To:</span>
+            <span class="ride-summary-value" id="request-to">-</span>
+          </div>
+          <div class="ride-summary-item">
+            <span class="ride-summary-label">Fare:</span>
+            <span class="ride-summary-value" id="request-fare">PKR 0.00</span>
+          </div>
+          <div class="ride-summary-item">
+            <span class="ride-summary-label">Vehicle:</span>
+            <div class="vehicle-summary">
+              <span class="vehicle-summary-icon" id="request-vehicle-icon"
+                ><i class="fas fa-car"></i
+              ></span>
+              <span class="ride-summary-value" id="request-vehicle">Car</span>
+              <span class="ride-summary-value" id="request-seats"
+                >(3 seats)</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="request-buttons">
+          <button
+            class="enhanced-btn enhanced-btn-secondary"
+            id="cancel-request"
+          >
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button
+            class="enhanced-btn enhanced-btn-primary"
+            id="confirm-request"
+          >
+            <i class="fas fa-check"></i> Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ride Sharing Modal -->
+    <div class="ride-sharing-modal" id="ride-sharing-modal">
+      <div class="ride-sharing-container">
+        <h3>Share Your Ride</h3>
+        <p>Select how many seats you want to share with other passengers</p>
+
+        <div class="seats-selection">
+          <label>Available Seats:</label>
+          <input
+            type="number"
+            id="available-seats"
+            class="seats-input"
+            min="1"
+            max="4"
+            value="1"
+          />
+        </div>
+
+        <div class="ride-sharing-buttons">
+          <button class="ride-sharing-cancel" id="ride-sharing-cancel">
+            Cancel
+          </button>
+          <button class="ride-sharing-confirm" id="ride-sharing-confirm">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Driver Match Modal -->
+    <div class="driver-modal" id="driver-modal">
+      <div class="driver-container">
+        <h3>Driver Found!</h3>
+
+        <div class="driver-info">
+          <img
+            src="https://randomuser.me/api/portraits/men/32.jpg"
+            alt="Driver"
+            class="driver-avatar"
+            id="driver-avatar"
+          />
+          <h4 class="driver-name" id="driver-name">John D.</h4>
+          <div class="driver-rating">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star-half-alt"></i>
+            <span>4.7</span>
+          </div>
+          <p class="driver-car" id="driver-car">
+            Toyota Corolla • White • ABC-1234
+          </p>
+          <p class="driver-eta" id="driver-eta">ETA: 5 minutes</p>
+        </div>
+
+        <div class="driver-fare" id="driver-fare">PKR 0.00</div>
+
+        <div class="driver-buttons">
+          <button
+            class="enhanced-btn enhanced-btn-secondary"
+            id="reject-driver"
+          >
+            <i class="fas fa-times"></i> Reject
+          </button>
+          <button class="enhanced-btn enhanced-btn-primary" id="accept-driver">
+            <i class="fas fa-check"></i> Accept
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Maps API -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOLanVMv6TpHj1LZPwwF9o2kGV3fKBNCk&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+    <script>
+      // Global Variables
+let map;
+let directionsService;
+let directionsRenderer;
+let userMarker;
+let userLocation = null;
+let destinationAutocomplete;
+let watchPositionId = null;
+let currentRoute = null;
+let rideInfoCollapsed = true;
+let isManualLocation = false;
+let isFindingDriver = false;
+let currentDriverIndex = 0;
+let availableDrivers = [];
+let riderFare = 0;
+let selectedVehicle = null;
+let selectedSeats = 1;
+let sharedSeats = 0;
+let isRideShared = false;
+let ipfs = null;
+
+// DOM Elements
+let mapModal, permissionModal, requestModal, driverModal, rideSharingModal;
+let locationPanel, panelToggle, originInput, destinationInput, paymentInput;
+let rideFrom, rideTo, rideDistance, rideDuration, rideVehicle, rideSeats, rideFare;
+let swapLocations, rideInfo, rideInfoToggle, confirmRideBtn, cancelBtn;
+let allowLocationBtn, denyLocationBtn, loadingSpinner, getDirectionsBtn;
+let driverAvatar, driverName, driverCar, driverEta, driverFare;
+let rejectDriverBtn, acceptDriverBtn, bikeOption, autoOption, carOption;
+let seatSelection, seatButtons, rideSharingSection, rideSharingBtn;
+let rideSharingCancel, rideSharingConfirm, availableSeatsInput;
+let riderAvatar, riderName, riderPhone, requestFrom, requestTo;
+let requestFare, requestVehicle, requestSeats, requestVehicleIcon;
+let cancelRequestBtn, confirmRequestBtn;
+
+// Initialize IPFS with local node
+async function initIPFS() {
+    try {
+        // First check if IPFS client is loaded
+        if (typeof window.IpfsHttpClient === 'undefined') {
+            throw new Error('IPFS HTTP client not loaded');
+        }
+        
+        ipfs = window.IpfsHttpClient.create({
+            host: '127.0.0.1',
+            port: 5001,
+            protocol: 'http'
+        });
+        
+        // Test connection
+        const version = await ipfs.version();
+        console.log('Connected to local IPFS node:', version.version);
+        return true;
+    } catch (error) {
+        console.error('Local IPFS connection failed:', error);
+        return false;
+    }
+}
+
+// Store ride data on local IPFS
+async function storeRideData(data) {
+    try {
+        const { cid } = await ipfs.add(JSON.stringify(data));
+        console.log('Ride data stored with CID:', cid.toString());
+        return cid.toString();
+    } catch (error) {
+        console.error('Error storing ride data:', error);
+        return null;
+    }
+}
+
+// Initialize Google Maps
+function initMap() {
+    // Initialize DOM elements
+    initDOMElements();
+    
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: false,
+        polylineOptions: {
+            strokeColor: "#4a6bff",
+            strokeOpacity: 0.8,
+            strokeWeight: 6,
+        },
+    });
+
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 0, lng: 0 },
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false,
+        styles: [
+            {
+                featureType: "poi",
+                stylers: [{ visibility: "off" }],
+            },
+        ],
+    });
+
+    directionsRenderer.setMap(map);
+
+    // Initialize Autocomplete for destination input
+    destinationAutocomplete = new google.maps.places.Autocomplete(
+        destinationInput,
+        {
+            types: ["geocode"],
+            componentRestrictions: { country: "pk" },
+        }
+    );
+
+    destinationAutocomplete.addListener("place_changed", onPlaceChanged);
+
+    // Initialize the app
+    initApp();
+}
+
+// Initialize all DOM elements
+function initDOMElements() {
+    mapModal = document.getElementById("map-modal");
+    permissionModal = document.getElementById("permission-modal");
+    requestModal = document.getElementById("request-modal");
+    driverModal = document.getElementById("driver-modal");
+    rideSharingModal = document.getElementById("ride-sharing-modal");
+    locationPanel = document.getElementById("location-panel");
+    panelToggle = document.getElementById("panel-toggle");
+    originInput = document.getElementById("origin-input");
+    destinationInput = document.getElementById("destination-input");
+    paymentInput = document.getElementById("payment-input");
+    rideFrom = document.getElementById("ride-from");
+    rideTo = document.getElementById("ride-to");
+    rideDistance = document.getElementById("ride-distance");
+    rideDuration = document.getElementById("ride-duration");
+    rideVehicle = document.getElementById("ride-vehicle");
+    rideSeats = document.getElementById("ride-seats");
+    rideFare = document.getElementById("ride-fare");
+    swapLocations = document.getElementById("swap-locations");
+    rideInfo = document.getElementById("ride-info");
+    rideInfoToggle = document.getElementById("ride-info-toggle");
+    confirmRideBtn = document.getElementById("confirm-ride-btn");
+    cancelBtn = document.getElementById("cancel-btn");
+    allowLocationBtn = document.getElementById("allow-location");
+    denyLocationBtn = document.getElementById("deny-location");
+    loadingSpinner = document.getElementById("loading-spinner");
+    getDirectionsBtn = document.getElementById("get-directions-btn");
+    driverAvatar = document.getElementById("driver-avatar");
+    driverName = document.getElementById("driver-name");
+    driverCar = document.getElementById("driver-car");
+    driverEta = document.getElementById("driver-eta");
+    driverFare = document.getElementById("driver-fare");
+    rejectDriverBtn = document.getElementById("reject-driver");
+    acceptDriverBtn = document.getElementById("accept-driver");
+    bikeOption = document.getElementById("bike-option");
+    autoOption = document.getElementById("auto-option");
+    carOption = document.getElementById("car-option");
+    seatSelection = document.getElementById("seat-selection");
+    seatButtons = document.querySelectorAll(".seat-btn");
+    rideSharingSection = document.getElementById("ride-sharing-section");
+    rideSharingBtn = document.getElementById("ride-sharing-btn");
+    rideSharingCancel = document.getElementById("ride-sharing-cancel");
+    rideSharingConfirm = document.getElementById("ride-sharing-confirm");
+    availableSeatsInput = document.getElementById("available-seats");
+    riderAvatar = document.getElementById("rider-avatar");
+    riderName = document.getElementById("rider-name");
+    riderPhone = document.getElementById("rider-phone");
+    requestFrom = document.getElementById("request-from");
+    requestTo = document.getElementById("request-to");
+    requestFare = document.getElementById("request-fare");
+    requestVehicle = document.getElementById("request-vehicle");
+    requestSeats = document.getElementById("request-seats");
+    requestVehicleIcon = document.getElementById("request-vehicle-icon");
+    cancelRequestBtn = document.getElementById("cancel-request");
+    confirmRequestBtn = document.getElementById("confirm-request");
+}
+
+// Initialize the application
+async function initApp() {
+    // Initialize local IPFS node
+    await initIPFS();
+    
+    // Load rider profile data
+    loadRiderProfile();
+
+    // Event Listeners
+    allowLocationBtn.addEventListener("click", allowLocationHandler);
+    denyLocationBtn.addEventListener("click", denyLocationHandler);
+    swapLocations.addEventListener("click", swapLocationsHandler);
+    confirmRideBtn.addEventListener("click", confirmRideHandler);
+    cancelBtn.addEventListener("click", cancelRideHandler);
+    rideInfoToggle.addEventListener("click", toggleRideInfo);
+    panelToggle.addEventListener("click", toggleLocationPanel);
+    getDirectionsBtn.addEventListener("click", calculateAndDisplayRoute);
+    rejectDriverBtn.addEventListener("click", rejectDriverHandler);
+    acceptDriverBtn.addEventListener("click", acceptDriverHandler);
+    cancelRequestBtn.addEventListener("click", cancelRequestHandler);
+    confirmRequestBtn.addEventListener("click", confirmRequestHandler);
+    rideSharingBtn.addEventListener("click", showRideSharingModal);
+    rideSharingCancel.addEventListener("click", hideRideSharingModal);
+    rideSharingConfirm.addEventListener("click", confirmRideSharing);
+    bikeOption.addEventListener("click", () => selectVehicle("bike"));
+    autoOption.addEventListener("click", () => selectVehicle("auto"));
+    carOption.addEventListener("click", () => selectVehicle("car"));
+    seatButtons.forEach((btn) => {
+        btn.addEventListener("click", function() {
+            selectSeats(parseInt(this.dataset.seats));
+        });
+    });
+    paymentInput.addEventListener("input", updateRiderFare);
+
+    // Initialize map click listener
+    map.addListener("click", (e) => {
+        if (isManualLocation) {
+            getAddressFromLatLng(e.latLng).then((address) => {
+                originInput.value = address;
+                userLocation = e.latLng;
+                updateUserMarker();
+                originInput.readOnly = false;
+            });
+        }
+    });
+
+    // Set default vehicle (car)
+    selectVehicle("car");
+}
+
+// Load rider profile data from sessionStorage
+function loadRiderProfile() {
+    try {
+        const riderData = JSON.parse(sessionStorage.getItem('currentRider')) || {};
+        
+        // Update avatar if available
+        if (riderData.profilePicUrl) {
+            riderAvatar.src = riderData.profilePicUrl;
+        } else {
+            riderAvatar.src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+        }
+
+        // Update name if available
+        if (riderData.firstName || riderData.lastName) {
+            const fullName = `${riderData.firstName || ''} ${riderData.lastName || ''}`.trim();
+            if (fullName) {
+                riderName.textContent = fullName;
+            }
+        }
+
+        // Update phone if available
+        if (riderData.contactNumber) {
+            riderPhone.textContent = riderData.contactNumber;
+        }
+    } catch (error) {
+        console.error("Error loading rider profile:", error);
+    }
+}
+
+// Select vehicle type
+function selectVehicle(type) {
+    // Remove selected class from all options
+    bikeOption.classList.remove("selected");
+    autoOption.classList.remove("selected");
+    carOption.classList.remove("selected");
+
+    // Add selected class to clicked option
+    const selectedOption = document.getElementById(`${type}-option`);
+    selectedOption.classList.add("selected");
+
+    // Store selected vehicle
+    selectedVehicle = type;
+
+    // Update ride info
+    if (currentRoute) {
+        rideVehicle.textContent =
+            type.charAt(0).toUpperCase() + type.slice(1);
+    }
+
+    // Show/hide seat selection based on vehicle type
+    if (type === "bike") {
+        seatSelection.style.display = "none";
+        selectedSeats = 1;
+        rideSharingSection.style.display = "none";
+        isRideShared = false;
+        sharedSeats = 0;
+    } else {
+        seatSelection.style.display = "flex";
+        if (selectedSeats === 1) {
+            selectSeats(3);
+        }
+        rideSharingSection.style.display = "block";
+    }
+
+    // Update request modal icon
+    let iconClass;
+    switch (type) {
+        case "bike":
+            iconClass = "fa-motorcycle";
+            break;
+        case "auto":
+            iconClass = "fa-rickshaw";
+            break;
+        case "car":
+            iconClass = "fa-car-side";
+            break;
+    }
+    requestVehicleIcon.innerHTML = `<i class="fas ${iconClass}"></i>`;
+}
+
+// Select number of seats
+function selectSeats(seats) {
+    // Remove selected class from all buttons
+    seatButtons.forEach((btn) => btn.classList.remove("selected"));
+
+    // Add selected class to clicked button
+    seatButtons.forEach((btn) => {
+        if (parseInt(btn.dataset.seats) === seats) {
+            btn.classList.add("selected");
+        }
+    });
+
+    // Store selected seats
+    selectedSeats = seats;
+
+    // Update ride info
+    if (currentRoute) {
+        rideSeats.textContent = seats;
+    }
+
+    // Update available seats input max value
+    if (availableSeatsInput) {
+        availableSeatsInput.max = seats;
+        if (parseInt(availableSeatsInput.value) > seats) {
+            availableSeatsInput.value = seats;
+        }
+    }
+}
+
+// Show ride sharing modal
+function showRideSharingModal() {
+    availableSeatsInput.max = selectedSeats;
+    availableSeatsInput.value = sharedSeats > 0 ? sharedSeats : 1;
+    rideSharingModal.style.display = "flex";
+}
+
+// Hide ride sharing modal
+function hideRideSharingModal() {
+    rideSharingModal.style.display = "none";
+}
+
+// Confirm ride sharing
+function confirmRideSharing() {
+    const seats = parseInt(availableSeatsInput.value);
+    if (seats > 0 && seats <= selectedSeats) {
+        sharedSeats = seats;
+        isRideShared = seats > 0;
+
+        rideSharingBtn.innerHTML = `<i class="fas fa-share-alt"></i> Sharing ${seats} Seat${
+            seats > 1 ? "s" : ""
+        }`;
+
+        hideRideSharingModal();
+    } else {
+        alert(`Please select between 1 and ${selectedSeats} seats`);
+    }
+}
+
+// Update rider fare when payment input changes
+function updateRiderFare() {
+    const amount = parseFloat(paymentInput.value) || 0;
+    riderFare = amount;
+    rideFare.textContent = `PKR ${amount.toFixed(2)}`;
+}
+
+// Toggle location panel
+function toggleLocationPanel() {
+    locationPanel.classList.toggle("collapsed");
+}
+
+// Update user marker position
+function updateUserMarker() {
+    if (userMarker) {
+        userMarker.setPosition(userLocation);
+    } else {
+        userMarker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: "Your Location",
+            icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                scaledSize: new google.maps.Size(40, 40),
+            },
+        });
+    }
+}
+
+// Toggle ride info
+function toggleRideInfo() {
+    rideInfoCollapsed = !rideInfoCollapsed;
+    rideInfo.classList.toggle("collapsed", rideInfoCollapsed);
+}
+
+// Handle Allow Location button click
+function allowLocationHandler() {
+    permissionModal.style.display = "none";
+    openMapModal();
+    getUserLocation();
+}
+
+// Handle Deny Location button click
+function denyLocationHandler() {
+    permissionModal.style.display = "none";
+    openMapModal();
+    originInput.value = "";
+    originInput.placeholder = "Enter your location manually";
+    originInput.readOnly = false;
+    isManualLocation = true;
+}
+
+// Open Map Modal
+function openMapModal() {
+    mapModal.style.display = "flex";
+}
+
+// Get User Location
+function getUserLocation() {
+    if (navigator.geolocation) {
+        originInput.value = "Detecting your location...";
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                updateUserLocation(position);
+                watchPositionId = navigator.geolocation.watchPosition(
+                    updateUserLocation,
+                    handleLocationError,
+                    { enableHighAccuracy: true }
+                );
+            },
+            handleLocationError,
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    } else {
+        originInput.placeholder = "Enter your location manually";
+        originInput.readOnly = false;
+        isManualLocation = true;
+    }
+}
+
+// Update User Location on Map
+function updateUserLocation(position) {
+    userLocation = new google.maps.LatLng(
+        position.coords.latitude,
+        position.coords.longitude
+    );
+
+    getAddressFromLatLng(userLocation).then((address) => {
+        originInput.value = address;
+        map.setCenter(userLocation);
+        updateUserMarker();
+    });
+}
+
+// Handle Location Errors
+function handleLocationError(error) {
+    originInput.value = "";
+    originInput.placeholder = "Enter your location manually";
+    originInput.readOnly = false;
+    isManualLocation = true;
+
+    if (error.code === error.PERMISSION_DENIED) {
+        alert(
+            "Location permission denied. Please allow location access to use this feature."
+        );
+    } else if (error.code === error.POSITION_UNAVAILABLE) {
+        alert("Location information is unavailable.");
+    } else if (error.code === error.TIMEOUT) {
+        alert("The request to get user location timed out.");
+    }
+}
+
+// Get Address from LatLng
+function getAddressFromLatLng(latlng) {
+    return new Promise((resolve, reject) => {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: latlng }, (results, status) => {
+            if (status === "OK" && results[0]) {
+                resolve(results[0].formatted_address);
+            } else {
+                resolve(`${latlng.lat().toFixed(6)}, ${latlng.lng().toFixed(6)}`);
+            }
+        });
+    });
+}
+
+// Handle Place Selection in Autocomplete
+function onPlaceChanged() {
+    const place = destinationAutocomplete.getPlace();
+
+    if (!place.geometry) {
+        rideFrom.textContent = "-";
+        rideTo.textContent = "-";
+        rideDistance.textContent = "-";
+        rideDuration.textContent = "-";
+        rideFare.textContent = "-";
+        confirmRideBtn.disabled = true;
+        return;
+    }
+
+    calculateAndDisplayRoute();
+}
+
+// Calculate and Display Route
+function calculateAndDisplayRoute() {
+    if (!userLocation || !destinationInput.value || !map) return;
+
+    loadingSpinner.style.display = "block";
+
+    const request = {
+        origin: userLocation,
+        destination: destinationInput.value,
+        travelMode: "DRIVING",
+        provideRouteAlternatives: false,
+        drivingOptions: {
+            departureTime: new Date(),
+            trafficModel: "bestguess",
+        },
+        unitSystem: google.maps.UnitSystem.METRIC,
+    };
+
+    directionsService.route(request, (result, status) => {
+        loadingSpinner.style.display = "none";
+
+        if (status === "OK") {
+            directionsRenderer.setDirections(result);
+            currentRoute = result;
+
+            const route = result.routes[0].legs[0];
+            rideFrom.textContent = route.start_address;
+            rideTo.textContent = route.end_address;
+            rideDistance.textContent = route.distance.text;
+            rideDuration.textContent = route.duration.text;
+            rideVehicle.textContent =
+                selectedVehicle.charAt(0).toUpperCase() +
+                selectedVehicle.slice(1);
+            rideSeats.textContent = selectedSeats;
+
+            if (paymentInput.value) {
+                updateRiderFare();
+            } else {
+                rideFare.textContent = "PKR 0.00";
+            }
+
+            confirmRideBtn.disabled = false;
+
+            if (rideInfoCollapsed) toggleRideInfo();
+
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(route.start_location);
+            bounds.extend(route.end_location);
+            map.fitBounds(bounds);
+        } else {
+            alert("Could not calculate route: " + status);
+            confirmRideBtn.disabled = true;
+        }
+    });
+}
+
+// Swap Origin and Destination
+function swapLocationsHandler() {
+    if (!originInput.value || !destinationInput.value) return;
+
+    const temp = originInput.value;
+    originInput.value = destinationInput.value;
+    destinationInput.value = temp;
+
+    if (userLocation) {
+        getAddressFromLatLng(userLocation).then((address) => {
+            originInput.value = address;
+            calculateAndDisplayRoute();
+        });
+    } else {
+        calculateAndDisplayRoute();
+    }
+}
+
+// Show ride request confirmation modal
+function showRideRequestModal() {
+    requestFrom.textContent = rideFrom.textContent;
+    requestTo.textContent = rideTo.textContent;
+    requestFare.textContent = rideFare.textContent;
+    requestVehicle.textContent =
+        selectedVehicle.charAt(0).toUpperCase() + selectedVehicle.slice(1);
+    requestSeats.textContent =
+        selectedVehicle === "bike" ? "" : `(${selectedSeats} seats)`;
+
+    requestModal.style.display = "flex";
+}
+
+// Handle cancel request button
+function cancelRequestHandler() {
+    requestModal.style.display = "none";
+    resetConfirmButton();
+}
+
+// Handle confirm request button
+async function confirmRequestHandler() {
+    requestModal.style.display = "none";
+    rideSharingBtn.disabled = false;
+
+    const rideData = {
+        rider: {
+            name: riderName.textContent,
+            phone: riderPhone.textContent,
+            avatar: riderAvatar.src,
+        },
+        rideDetails: {
+            from: rideFrom.textContent,
+            to: rideTo.textContent,
+            distance: rideDistance.textContent,
+            duration: rideDuration.textContent,
+            vehicleType: selectedVehicle,
+            seats: selectedSeats,
+            sharedSeats: sharedSeats,
+            fare: riderFare,
+            timestamp: new Date().toISOString(),
+            coordinates: {
+                start: {
+                    lat: userLocation.lat(),
+                    lng: userLocation.lng(),
+                },
+                end: currentRoute.routes[0].legs[0].end_location.toJSON(),
+            },
+        },
+    };
+
+    try {
+        const cid = await storeRideData(rideData);
+        if (cid) {
+            console.log("Ride data successfully stored on local IPFS with CID:", cid);
+            
+            confirmRideBtn.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Finding Driver...';
+            confirmRideBtn.disabled = true;
+            isFindingDriver = true;
+        } else {
+            console.error("Failed to store ride data on local IPFS");
+            alert("Failed to store ride data. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error storing ride data:", error);
+        alert("Error storing ride data. Please try again.");
+    }
+}
+
+// Reject Driver Handler
+function rejectDriverHandler() {
+    driverModal.style.display = "none";
+    currentDriverIndex++;
+
+    if (currentDriverIndex < availableDrivers.length) {
+        setTimeout(() => {
+            showDriverMatch();
+        }, 1000);
+    } else {
+        alert("No more drivers available. Please try again later.");
+    }
+}
+
+// Accept Driver Handler
+function acceptDriverHandler() {
+    driverModal.style.display = "none";
+    alert(
+        `Ride confirmed with ${availableDrivers[currentDriverIndex].name}!`
+    );
+    resetUI();
+}
+
+// Cancel Ride Handler
+function cancelRideHandler() {
+    if (isFindingDriver) {
+        if (confirm("Are you sure you want to cancel finding a driver?")) {
+            resetUI();
+        }
+    } else {
+        resetUI();
+    }
+}
+
+// Reset Confirm Button
+function resetConfirmButton() {
+    confirmRideBtn.innerHTML = '<i class="fas fa-car"></i> Request Ride';
+    confirmRideBtn.disabled = false;
+    isFindingDriver = false;
+}
+
+// Reset UI
+function resetUI() {
+    directionsRenderer.setMap(null);
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
+
+    destinationInput.value = "";
+    paymentInput.value = "";
+
+    rideFrom.textContent = "-";
+    rideTo.textContent = "-";
+    rideDistance.textContent = "-";
+    rideDuration.textContent = "-";
+    rideVehicle.textContent = "-";
+    rideSeats.textContent = "-";
+    rideFare.textContent = "PKR 0.00";
+
+    isRideShared = false;
+    sharedSeats = 0;
+    rideSharingBtn.innerHTML =
+        '<i class="fas fa-share-alt"></i> Share Ride';
+    rideSharingBtn.disabled = true;
+
+    confirmRideBtn.disabled = true;
+    isFindingDriver = false;
+
+    if (userLocation) {
+        map.setCenter(userLocation);
+    }
+
+    if (!rideInfoCollapsed) toggleRideInfo();
+}
+
+// Confirm ride handler - shows confirmation modal first
+function confirmRideHandler() {
+    if (!currentRoute) return;
+    showRideRequestModal();
+}
+
+// Initialize the app when the window loads
+window.onload = function() {
+    permissionModal.style.display = "flex";
+};
+    </script>
+  </body>
+</html>

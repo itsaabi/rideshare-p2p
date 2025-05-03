@@ -1,0 +1,2546 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DriveWise - Driver Dashboard</title>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Animate.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --primary-dark: #3a56d4;
+        --secondary: #3f37c9;
+        --accent: #4895ef;
+        --dark: #1a1a2e;
+        --light: #f8f9fa;
+        --success: #4cc9f0;
+        --warning: #f8961e;
+        --danger: #f72585;
+        --gray: #6c757d;
+        --dark-gray: #343a40;
+        --sidebar-width: 280px;
+        --header-height: 70px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f5f7fa;
+        color: #333;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Dashboard Layout */
+      .dashboard {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, #1a1a2e, #16213e);
+        color: white;
+        position: fixed;
+        height: 100vh;
+        transition: all 0.3s ease;
+        z-index: 100;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar-header {
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .logo-icon {
+        font-size: 2rem;
+        color: var(--accent);
+      }
+
+      .logo-text {
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, var(--accent), var(--success));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .sidebar-menu {
+        padding: 1.5rem 0;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1.5rem;
+        margin: 0.5rem 0;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .menu-item:hover,
+      .menu-item.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .menu-item.active {
+        border-left: 4px solid var(--accent);
+      }
+
+      .menu-item:hover::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--accent);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      .menu-icon {
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        width: 24px;
+        text-align: center;
+      }
+
+      .menu-text {
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+
+      .menu-badge {
+        margin-left: auto;
+        background: var(--accent);
+        color: white;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 10px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      /* Main Content Area */
+      .main-content {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        transition: all 0.3s ease;
+      }
+
+      /* Header Styles */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+        height: var(--header-height);
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 90;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+      }
+
+      .menu-toggle {
+        font-size: 1.5rem;
+        color: var(--dark);
+        cursor: pointer;
+        margin-right: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .menu-toggle:hover {
+        color: var(--accent);
+      }
+
+      .search-bar {
+        position: relative;
+        width: 300px;
+      }
+
+      .search-bar input {
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+      }
+
+      .search-bar input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .notification-icon,
+      .message-icon {
+        font-size: 1.2rem;
+        color: var(--dark-gray);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .notification-icon:hover,
+      .message-icon:hover {
+        color: var(--accent);
+      }
+
+      .notification-badge,
+      .message-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--danger);
+        color: white;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        font-size: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .message-badge {
+        background: var(--success);
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .profile-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--accent);
+        transition: all 0.3s ease;
+      }
+
+      .profile-image:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(72, 149, 239, 0.5);
+      }
+
+      .profile-name {
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .profile-dropdown {
+        position: absolute;
+        top: 120%;
+        right: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        width: 200px;
+        overflow: hidden;
+        display: none;
+        z-index: 100;
+        animation: fadeInDown 0.3s ease-out;
+      }
+
+      .user-profile:hover .profile-dropdown {
+        display: block;
+      }
+
+      .dropdown-item {
+        padding: 0.8rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--dark-gray);
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .dropdown-item:hover {
+        background: #f5f7fa;
+        color: var(--accent);
+      }
+
+      .dropdown-icon {
+        font-size: 0.9rem;
+        width: 20px;
+        text-align: center;
+      }
+
+      /* Content Area */
+      .content {
+        padding: 2rem;
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .page-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .page-actions {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        color: white;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(
+          to right,
+          var(--primary-dark),
+          var(--accent)
+        );
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+      }
+
+      .btn-outline:hover {
+        background: rgba(72, 149, 239, 0.1);
+      }
+
+      /* Dashboard Cards */
+      .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--accent);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .card-title {
+        font-size: 0.9rem;
+        color: var(--gray);
+        font-weight: 500;
+      }
+
+      .card-icon {
+        font-size: 1.2rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(72, 149, 239, 0.1);
+        color: var(--accent);
+      }
+
+      .card-body {
+        margin-bottom: 1rem;
+      }
+
+      .card-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+      }
+
+      .card-text {
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      .card-footer {
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+      }
+
+      .card-growth {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: var(--success);
+        margin-right: 1rem;
+      }
+
+      .growth-danger {
+        color: var(--danger);
+      }
+
+      /* Profile Section */
+      .profile-section {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
+      }
+
+      .profile-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        position: sticky;
+        top: calc(var(--header-height) + 2rem);
+        height: fit-content;
+      }
+
+      .profile-image-lg {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid var(--accent);
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .profile-image-lg:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .profile-name-lg {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+      }
+
+      .profile-role {
+        font-size: 0.9rem;
+        color: var(--accent);
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        padding: 0.3rem 1rem;
+        background: rgba(72, 149, 239, 0.1);
+        border-radius: 20px;
+        display: inline-block;
+      }
+
+      .profile-stats {
+        display: flex;
+        justify-content: space-around;
+        margin: 2rem 0;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--gray);
+      }
+
+      .profile-bio {
+        margin-bottom: 2rem;
+        color: var(--gray);
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .social-link {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f7fa;
+        color: var(--dark-gray);
+        transition: all 0.3s ease;
+      }
+
+      .social-link:hover {
+        background: var(--accent);
+        color: white;
+        transform: translateY(-3px);
+      }
+
+      .profile-details {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      .details-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+
+      .detail-item {
+        margin-bottom: 1.5rem;
+      }
+
+      .detail-label {
+        font-size: 0.8rem;
+        color: var(--gray);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .detail-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--dark);
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #eee;
+      }
+
+      /* Recent Trips Table */
+      .recent-trips {
+        margin-top: 2rem;
+      }
+
+      .table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        color: white;
+      }
+
+      th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 500;
+      }
+
+      tbody tr {
+        border-bottom: 1px solid #eee;
+        transition: all 0.3s ease;
+      }
+
+      tbody tr:hover {
+        background: #f9f9f9;
+      }
+
+      td {
+        padding: 1rem;
+        color: var(--dark-gray);
+      }
+
+      .status {
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .status-completed {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--success);
+      }
+
+      .status-pending {
+        background: rgba(248, 150, 30, 0.1);
+        color: var(--warning);
+      }
+
+      .status-cancelled {
+        background: rgba(247, 37, 133, 0.1);
+        color: var(--danger);
+      }
+
+      .action-btn {
+        padding: 0.3rem 0.75rem;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        background: rgba(72, 149, 239, 0.1);
+        color: var(--accent);
+      }
+
+      .action-btn:hover {
+        background: var(--accent);
+        color: white;
+      }
+
+      /* Vehicle Section */
+      .vehicle-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+
+      .vehicle-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .vehicle-image-container {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .vehicle-image {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .document-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+      }
+
+      /* Ride Alerts Section */
+      .ride-alerts {
+        margin-top: 2rem;
+      }
+
+      .alert-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .alert-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .alert-content {
+        flex: 1;
+      }
+
+      .alert-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+      }
+
+      .alert-message {
+        color: var(--gray);
+        margin-bottom: 0.5rem;
+      }
+
+      .alert-time {
+        font-size: 0.8rem;
+        color: var(--gray);
+      }
+
+      .alert-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* Settings Section */
+      .settings-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .settings-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .settings-group {
+        margin-bottom: 2rem;
+      }
+
+      .settings-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      .setting-label {
+        font-weight: 500;
+        color: var(--dark-gray);
+      }
+
+      .setting-control {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .toggle-slider {
+        background-color: var(--accent);
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 1200px) {
+        .profile-section,
+        .vehicle-section {
+          grid-template-columns: 1fr;
+        }
+
+        .profile-card {
+          position: static;
+        }
+      }
+
+      @media (max-width: 992px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.active {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .content {
+          padding: 1.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 0 1rem;
+        }
+
+        .search-bar {
+          width: 200px;
+        }
+
+        .profile-name {
+          display: none;
+        }
+
+        .details-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard-cards {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .dashboard-cards {
+          grid-template-columns: 1fr;
+        }
+
+        .page-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+
+        .vehicle-section {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Animations */
+      .animate-bounce {
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-15px);
+        }
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray);
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .tab:hover {
+        color: var(--accent);
+      }
+
+      .tab.active {
+        color: var(--accent);
+      }
+
+      .tab.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--accent);
+        border-radius: 3px 3px 0 0;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.5s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <!-- Sidebar -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon"><i class="fas fa-car-side"></i></div>
+            <div class="logo-text">DriveWise</div>
+          </div>
+        </div>
+        <div class="sidebar-menu">
+          <a href="#" class="menu-item active" data-tab="dashboard">
+            <div class="menu-icon"><i class="fas fa-tachometer-alt"></i></div>
+            <div class="menu-text">Dashboard</div>
+          </a>
+          <a href="#" class="menu-item" data-tab="ride-alerts">
+            <div class="menu-icon"><i class="fas fa-bell"></i></div>
+            <div class="menu-text">Ride Alerts</div>
+            <div class="menu-badge" id="alertsBadge">0</div>
+          </a>
+          <a href="#" class="menu-item" data-tab="profile">
+            <div class="menu-icon"><i class="fas fa-user"></i></div>
+            <div class="menu-text">Profile</div>
+          </a>
+          <a href="#" class="menu-item" data-tab="trips">
+            <div class="menu-icon"><i class="fas fa-route"></i></div>
+            <div class="menu-text">Trips</div>
+            <div class="menu-badge" id="tripsBadge">0</div>
+          </a>
+          <a href="#" class="menu-item" data-tab="vehicles">
+            <div class="menu-icon"><i class="fas fa-car"></i></div>
+            <div class="menu-text">Vehicles</div>
+          </a>
+          <a href="#" class="menu-item" data-tab="settings">
+            <div class="menu-icon"><i class="fas fa-cog"></i></div>
+            <div class="menu-text">Settings</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+          <div class="header-left">
+            <div class="menu-toggle" id="menuToggle">
+              <i class="fas fa-bars"></i>
+            </div>
+            <div class="search-bar">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" placeholder="Search..." />
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="notification-icon" id="rideAlertsIcon">
+              <i class="fas fa-bell"></i>
+              <div class="notification-badge" id="alertsIconBadge">0</div>
+            </div>
+            <div class="user-profile">
+              <img
+                src="https://via.placeholder.com/150"
+                alt="Profile"
+                class="profile-image"
+                id="headerProfileImage"
+              />
+              <div class="profile-name" id="headerProfileName">John Doe</div>
+              <div class="profile-dropdown">
+                <a href="#" class="dropdown-item" data-tab="profile">
+                  <div class="dropdown-icon"><i class="fas fa-user"></i></div>
+                  <div>Profile</div>
+                </a>
+                <a href="#" class="dropdown-item" data-tab="settings">
+                  <div class="dropdown-icon"><i class="fas fa-cog"></i></div>
+                  <div>Settings</div>
+                </a>
+                <a href="#" class="dropdown-item" id="logoutBtn">
+                  <div class="dropdown-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                  </div>
+                  <div>Logout</div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content">
+          <!-- Dashboard Tab -->
+          <div class="tab-content active" id="dashboard-tab">
+            <div class="page-header">
+              <h1 class="page-title">Dashboard</h1>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-cards">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Total Earnings</div>
+                  <div class="card-icon">
+                    <i class="fas fa-wallet"></i>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-value" id="totalEarnings">$0.00</div>
+                  <div class="card-text">This month</div>
+                </div>
+                <div class="card-footer">
+                  <div class="card-text">Automatically updated</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Completed Trips</div>
+                  <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-value" id="completedTrips">0</div>
+                  <div class="card-text">This month</div>
+                </div>
+                <div class="card-footer">
+                  <div class="card-text">Automatically counted</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Active Hours</div>
+                  <div class="card-icon">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-value" id="activeHours">0.0</div>
+                  <div class="card-text">This session</div>
+                </div>
+                <div class="card-footer">
+                  <div class="card-text">Tracking since login</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">Rating</div>
+                  <div class="card-icon">
+                    <i class="fas fa-star"></i>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-value" id="driverRating">0.0</div>
+                  <div class="card-text" id="ratingCount">From 0 reviews</div>
+                </div>
+                <div class="card-footer">
+                  <div class="card-text">Based on rider feedback</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Trips -->
+            <div class="recent-trips">
+              <h2 class="section-title">Recent Trips</h2>
+              <div class="table-container">
+                <table id="recentTripsTable">
+                  <thead>
+                    <tr>
+                      <th>Trip ID</th>
+                      <th>Date</th>
+                      <th>Passenger</th>
+                      <th>Distance</th>
+                      <th>Fare</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTripsBody">
+                    <!-- Will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trips Tab -->
+          <div class="tab-content" id="trips-tab">
+            <div class="page-header">
+              <h1 class="page-title">All Trips</h1>
+            </div>
+
+            <div class="recent-trips">
+              <div class="table-container">
+                <table id="allTripsTable">
+                  <thead>
+                    <tr>
+                      <th>Trip ID</th>
+                      <th>Date</th>
+                      <th>Passenger</th>
+                      <th>Pickup</th>
+                      <th>Dropoff</th>
+                      <th>Distance</th>
+                      <th>Fare</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="allTripsBody">
+                    <!-- Will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Tab -->
+          <div class="tab-content" id="profile-tab">
+            <div class="page-header">
+              <h1 class="page-title">My Profile</h1>
+            </div>
+
+            <div class="profile-section">
+              <div class="profile-card">
+                <img
+                  src="https://via.placeholder.com/150"
+                  alt="Profile"
+                  class="profile-image-lg"
+                  id="profileImage"
+                />
+                <h2 class="profile-name-lg" id="profileName">John Doe</h2>
+                <div class="profile-role">Verified Driver</div>
+
+                <div class="profile-stats">
+                  <div class="stat-item">
+                    <div class="stat-value" id="profileRating">4.8</div>
+                    <div class="stat-label">Rating</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value" id="profileTrips">48</div>
+                    <div class="stat-label">Trips</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Years</div>
+                  </div>
+                </div>
+
+                <p class="profile-bio" id="profileBio">
+                  Professional driver with 5+ years of experience. Providing
+                  safe and comfortable rides for all passengers.
+                </p>
+              </div>
+
+              <div class="profile-details">
+                <div class="details-header">
+                  <h2 class="details-title">Personal Information</h2>
+                </div>
+
+                <div class="details-grid">
+                  <div class="detail-item">
+                    <div class="detail-label">Full Name</div>
+                    <div class="detail-value" id="detailFullName">
+                      John Michael Doe
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value" id="detailEmail">
+                      john.doe@example.com
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Date of Birth</div>
+                    <div class="detail-value" id="detailDob">15 March 1985</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Gender</div>
+                    <div class="detail-value" id="detailGender">Male</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value" id="detailPhone">
+                      +1 (555) 123-4567
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">CNIC/NICOP</div>
+                    <div class="detail-value" id="detailCnic">
+                      12345-6789012-3
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Address</div>
+                    <div class="detail-value" id="detailAddress">
+                      123 Main Street, Apt 4B, New York, NY 10001
+                    </div>
+                  </div>
+                </div>
+
+                <div class="details-header" style="margin-top: 2rem">
+                  <h2 class="details-title">Driver Information</h2>
+                </div>
+
+                <div class="details-grid">
+                  <div class="detail-item">
+                    <div class="detail-label">License Number</div>
+                    <div class="detail-value" id="detailLicense">
+                      ABC-1234567
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Vehicle Number</div>
+                    <div class="detail-value" id="detailVehicle">XYZ-7890</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Vehicle Type</div>
+                    <div class="detail-value" id="detailVehicleType">Sedan</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">License Expiry</div>
+                    <div class="detail-value" id="detailLicenseExpiry">
+                      15 March 2025
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicles Tab -->
+          <div class="tab-content" id="vehicles-tab">
+            <div class="page-header">
+              <h1 class="page-title">My Vehicles</h1>
+            </div>
+
+            <div class="vehicle-section">
+              <div class="vehicle-card">
+                <div class="details-header">
+                  <h2 class="details-title">Vehicle Information</h2>
+                </div>
+
+                <div class="details-grid">
+                  <div class="detail-item">
+                    <div class="detail-label">License Number</div>
+                    <div class="detail-value" id="detailLicense">PNA-234534</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Vehicle Number</div>
+                    <div class="detail-value" id="detailVehicle">CNN-3564</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Vehicle Type</div>
+                    <div class="detail-value" id="detailVehicleType">Car</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">License Expiry</div>
+                    <div class="detail-value" id="detailLicenseExpiry">15 March 2025</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vehicle-card">
+                <div class="details-header">
+                  <h2 class="details-title">Documents</h2>
+                </div>
+
+                <div class="vehicle-image-container">
+                  <h3 class="image-title">Driver License</h3>
+                  <img
+                    src="https://via.placeholder.com/600x400?text=Loading+License..."
+                    alt="Driver License"
+                    class="document-image"
+                    id="licenseImage"
+                  />
+                </div>
+
+                <div class="vehicle-image-container" style="margin-top: 2rem;">
+                  <h3 class="image-title">Vehicle Image</h3>
+                  <img
+                    src="https://via.placeholder.com/600x400?text=Loading+Vehicle..."
+                    alt="Vehicle Image"
+                    class="document-image"
+                    id="vehicleImage"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ride Alerts Tab -->
+          <div class="tab-content" id="ride-alerts-tab">
+            <div class="page-header">
+              <h1 class="page-title">Ride Alerts</h1>
+            </div>
+
+            <div class="ride-alerts">
+              <div id="alertsContainer">
+                <!-- Alerts will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Tab -->
+          <div class="tab-content" id="settings-tab">
+            <div class="page-header">
+              <h1 class="page-title">Settings</h1>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-card">
+                <div class="settings-group">
+                  <h3 class="settings-title">Account Settings</h3>
+                  <div class="setting-item">
+                    <div class="setting-label">Change Password</div>
+                    <div class="setting-control">
+                      <button class="btn btn-outline" id="changePasswordBtn">
+                        Change
+                      </button>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Two-Factor Authentication</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="twoFactorToggle" />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Delete Account</div>
+                    <div class="setting-control">
+                      <button class="btn btn-outline" id="deleteAccountBtn">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-group">
+                  <h3 class="settings-title">Notification Settings</h3>
+                  <div class="setting-item">
+                    <div class="setting-label">Ride Requests</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="rideRequestsToggle" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Messages</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="messagesToggle" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Promotions</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="promotionsToggle" />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-group">
+                  <h3 class="settings-title">Appearance</h3>
+                  <div class="setting-item">
+                    <div class="setting-label">Dark Mode</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="darkModeToggle" />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Font Size</div>
+                    <div class="setting-control">
+                      <select id="fontSizeSelect" class="form-control" style="width: 100px;">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-group">
+                  <h3 class="settings-title">Privacy</h3>
+                  <div class="setting-item">
+                    <div class="setting-label">Show Profile to Riders</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="profileVisibilityToggle" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Share Location</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="locationSharingToggle" checked />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Share Trip History</div>
+                    <div class="setting-control">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="tripHistoryToggle" />
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-group">
+                  <h3 class="settings-title">About</h3>
+                  <div class="setting-item">
+                    <div class="setting-label">App Version</div>
+                    <div class="setting-control">
+                      <span>1.0.0</span>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Terms of Service</div>
+                    <div class="setting-control">
+                      <button class="btn btn-outline" id="termsBtn">
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <div class="setting-label">Privacy Policy</div>
+                    <div class="setting-control">
+                      <button class="btn btn-outline" id="privacyBtn">
+                        View
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ipfs-http-client@56.0.1/dist/index.min.js"></script>
+
+    <script>
+      // Configuration
+      const CONTRACT_ADDRESS = "0xa624AB1344DE2560acF3C5d60DebD6357DbD54D7";
+      const CONTRACT_ABI = [
+          {
+              "inputs": [
+                  {
+                      "internalType": "string",
+                      "name": "_email",
+                      "type": "string"
+                  }
+              ],
+              "name": "getDriverByEmail",
+              "outputs": [
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  },
+                  {
+                      "internalType": "address",
+                      "name": "",
+                      "type": "address"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          }
+      ];
+      const IPFS_NODE_URL = "http://127.0.0.1:5001";
+
+      // Application State
+      let web3;
+      let contract;
+      let ipfs;
+      let currentAccount;
+      let driverData = null;
+      let activeHoursInterval;
+      let loginTime;
+      let completedTrips = 0;
+      let totalEarnings = 0;
+      let ratings = [];
+      let allTrips = [];
+      let rideAlerts = [];
+      let settings = {
+          twoFactorAuth: false,
+          rideRequests: true,
+          messages: true,
+          promotions: false,
+          darkMode: false,
+          fontSize: 'medium',
+          profileVisibility: true,
+          locationSharing: true,
+          tripHistory: false
+      };
+
+      // Initialize the application
+      document.addEventListener('DOMContentLoaded', async () => {
+          try {
+              await initApp();
+              await loadDriverData();
+              loadSavedData();
+              setupEventListeners();
+              initDashboardMetrics();
+              simulateData(); // For demo purposes only
+          } catch (error) {
+              console.error("Initialization error:", error);
+          }
+      });
+
+      // Initialize dashboard metrics
+      function initDashboardMetrics() {
+          // Start tracking active hours
+          startTrackingActiveHours();
+          
+          // Update UI with initial values
+          updateDashboardMetrics();
+      }
+      
+      // Load saved data from localStorage
+      function loadSavedData() {
+          const savedMetrics = JSON.parse(localStorage.getItem('driverMetrics')) || {};
+          completedTrips = savedMetrics.completedTrips || 0;
+          totalEarnings = savedMetrics.totalEarnings || 0;
+          ratings = savedMetrics.ratings || [];
+          allTrips = savedMetrics.allTrips || [];
+          rideAlerts = savedMetrics.rideAlerts || [];
+          
+          const savedSettings = JSON.parse(localStorage.getItem('driverSettings')) || {};
+          settings = { ...settings, ...savedSettings };
+          
+          updateSettingsUI();
+      }
+      
+      // Save data to localStorage
+      function saveData() {
+          const metrics = {
+              completedTrips,
+              totalEarnings,
+              ratings,
+              allTrips,
+              rideAlerts
+          };
+          localStorage.setItem('driverMetrics', JSON.stringify(metrics));
+          
+          localStorage.setItem('driverSettings', JSON.stringify(settings));
+      }
+      
+      // Update dashboard metrics UI
+      function updateDashboardMetrics() {
+          document.getElementById('completedTrips').textContent = completedTrips;
+          document.getElementById('tripsBadge').textContent = completedTrips;
+          document.getElementById('totalEarnings').textContent = `$${totalEarnings.toFixed(2)}`;
+          
+          // Calculate average rating
+          const avgRating = ratings.length > 0 ? 
+              (ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length) : 0;
+          document.getElementById('driverRating').textContent = avgRating.toFixed(1);
+          document.getElementById('ratingCount').textContent = `From ${ratings.length} reviews`;
+          document.getElementById('profileRating').textContent = avgRating.toFixed(1);
+          
+          // Update profile stats
+          document.getElementById('profileTrips').textContent = completedTrips;
+          
+          // Update trips tables
+          updateTripsTables();
+          
+          // Update alerts
+          updateAlerts();
+      }
+      
+      // Start tracking active hours
+      function startTrackingActiveHours() {
+          loginTime = new Date();
+          document.getElementById('activeHours').textContent = '0.0';
+          
+          // Update every minute
+          activeHoursInterval = setInterval(() => {
+              const now = new Date();
+              const hours = (now - loginTime) / (1000 * 60 * 60);
+              document.getElementById('activeHours').textContent = hours.toFixed(1);
+          }, 60000);
+      }
+      
+      // Update trips tables
+      function updateTripsTables() {
+          updateRecentTripsTable();
+          updateAllTripsTable();
+      }
+      
+      // Update recent trips table (shows last 5 trips)
+      function updateRecentTripsTable() {
+          const tbody = document.getElementById('recentTripsBody');
+          tbody.innerHTML = '';
+          
+          // Sort by date (newest first)
+          const sortedTrips = [...allTrips].sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          // Show only last 5 trips
+          const tripsToShow = sortedTrips.slice(0, 5);
+          
+          tripsToShow.forEach(trip => {
+              const row = document.createElement('tr');
+              
+              row.innerHTML = `
+                  <td>${trip.id}</td>
+                  <td>${formatDate(trip.date)}</td>
+                  <td>${trip.passenger}</td>
+                  <td>${trip.distance} km</td>
+                  <td>$${trip.fare.toFixed(2)}</td>
+                  <td><span class="status status-completed">Completed</span></td>
+              `;
+              
+              tbody.appendChild(row);
+          });
+      }
+      
+      // Update all trips table
+      function updateAllTripsTable() {
+          const tbody = document.getElementById('allTripsBody');
+          tbody.innerHTML = '';
+          
+          // Sort by date (newest first)
+          const sortedTrips = [...allTrips].sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          sortedTrips.forEach(trip => {
+              const row = document.createElement('tr');
+              
+              row.innerHTML = `
+                  <td>${trip.id}</td>
+                  <td>${formatDate(trip.date)}</td>
+                  <td>${trip.passenger}</td>
+                  <td>${trip.pickup}</td>
+                  <td>${trip.dropoff}</td>
+                  <td>${trip.distance} km</td>
+                  <td>$${trip.fare.toFixed(2)}</td>
+                  <td><span class="status status-completed">Completed</span></td>
+              `;
+              
+              tbody.appendChild(row);
+          });
+      }
+      
+      // Update alerts
+      function updateAlerts() {
+          const container = document.getElementById('alertsContainer');
+          container.innerHTML = '';
+          
+          // Sort by date (newest first)
+          const sortedAlerts = [...rideAlerts].sort((a, b) => new Date(b.time) - new Date(a.time));
+          
+          // Update badge counts
+          const unreadCount = rideAlerts.filter(alert => !alert.read).length;
+          document.getElementById('alertsBadge').textContent = unreadCount;
+          document.getElementById('alertsIconBadge').textContent = unreadCount;
+          
+          sortedAlerts.forEach(alert => {
+              const alertElement = document.createElement('div');
+              alertElement.className = `alert-item ${alert.read ? '' : 'unread'}`;
+              
+              alertElement.innerHTML = `
+                  <div class="alert-content">
+                      <div class="alert-title">${alert.type === 'ride' ? 'New Ride Request' : 'System Notification'}</div>
+                      <div class="alert-message">${alert.message}</div>
+                      <div class="alert-time">${formatTime(alert.time)}</div>
+                  </div>
+                  <div class="alert-actions">
+                      ${alert.type === 'ride' ? `
+                      <button class="btn btn-primary accept-btn" data-id="${alert.id}">Accept</button>
+                      <button class="btn btn-outline reject-btn" data-id="${alert.id}">Reject</button>
+                      ` : ''}
+                  </div>
+              `;
+              
+              container.appendChild(alertElement);
+          });
+      }
+      
+      // Format date for display
+      function formatDate(dateString) {
+          const date = new Date(dateString);
+          return date.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+          });
+      }
+      
+      // Format time for display
+      function formatTime(dateString) {
+          const date = new Date(dateString);
+          return date.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: true
+          });
+      }
+      
+      // Add a completed trip
+      function addCompletedTrip(trip) {
+          completedTrips++;
+          totalEarnings += trip.fare;
+          allTrips.push(trip);
+          
+          // Save and update UI
+          saveData();
+          updateDashboardMetrics();
+      }
+      
+      // Add a new rating
+      function addRating(rating) {
+          ratings.push(rating);
+          
+          // Save and update UI
+          saveData();
+          updateDashboardMetrics();
+      }
+      
+      // Add a new ride alert
+      function addRideAlert(alert) {
+          rideAlerts.unshift(alert);
+          
+          // Save and update UI
+          saveData();
+          updateDashboardMetrics();
+          
+          // Show notification
+          if (Notification.permission === 'granted') {
+              new Notification('New Ride Alert', {
+                  body: alert.message
+              });
+          }
+      }
+      
+      // Mark alert as read
+      function markAlertAsRead(alertId) {
+          const alert = rideAlerts.find(a => a.id === alertId);
+          if (alert) {
+              alert.read = true;
+              saveData();
+              updateDashboardMetrics();
+          }
+      }
+      
+      // Update settings UI
+      function updateSettingsUI() {
+          document.getElementById('twoFactorToggle').checked = settings.twoFactorAuth;
+          document.getElementById('rideRequestsToggle').checked = settings.rideRequests;
+          document.getElementById('messagesToggle').checked = settings.messages;
+          document.getElementById('promotionsToggle').checked = settings.promotions;
+          document.getElementById('darkModeToggle').checked = settings.darkMode;
+          document.getElementById('fontSizeSelect').value = settings.fontSize;
+          document.getElementById('profileVisibilityToggle').checked = settings.profileVisibility;
+          document.getElementById('locationSharingToggle').checked = settings.locationSharing;
+          document.getElementById('tripHistoryToggle').checked = settings.tripHistory;
+          
+          // Apply dark mode if enabled
+          if (settings.darkMode) {
+              document.body.classList.add('dark-mode');
+          } else {
+              document.body.classList.remove('dark-mode');
+          }
+          
+          // Apply font size
+          document.body.style.fontSize = settings.fontSize === 'small' ? '14px' : 
+                                        settings.fontSize === 'large' ? '18px' : '16px';
+      }
+      
+      // Simulate data for demo purposes
+      function simulateData() {
+          // Only add demo data if no real data exists
+          if (allTrips.length === 0) {
+              const demoPassengers = ['Sarah Johnson', 'Michael Brown', 'Emily Davis', 'Robert Wilson', 'Jennifer Lee'];
+              const demoPickups = ['123 Main St', '456 Oak Ave', '789 Pine Blvd', '321 Elm St', '654 Maple Ave'];
+              const demoDropoffs = ['Central Park', 'Downtown Mall', 'Airport Terminal', 'University Campus', 'Train Station'];
+              const demoDistances = [5.2, 8.7, 3.5, 12.3, 6.8];
+              const demoFares = [12.50, 18.30, 9.20, 24.10, 15.60];
+              
+              demoPassengers.forEach((passenger, index) => {
+                  const tripDate = new Date();
+                  tripDate.setDate(tripDate.getDate() - (demoPassengers.length - index));
+                  
+                  addCompletedTrip({
+                      id: `#TR-${Math.floor(10000 + Math.random() * 90000)}`,
+                      date: tripDate.toISOString(),
+                      passenger,
+                      pickup: demoPickups[index],
+                      dropoff: demoDropoffs[index],
+                      distance: demoDistances[index],
+                      fare: demoFares[index]
+                  });
+              });
+          }
+          
+          if (ratings.length === 0) {
+              // Add some random ratings
+              for (let i = 0; i < 10; i++) {
+                  addRating((Math.random() * 2 + 3).toFixed(1)); // Ratings between 3.0 and 5.0
+              }
+          }
+          
+          if (rideAlerts.length === 0) {
+              // Add some demo ride alerts
+              const demoLocations = ['Downtown', 'Airport', 'University', 'Mall', 'Hospital'];
+              const demoPassengers = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Riley'];
+              
+              demoPassengers.forEach((passenger, index) => {
+                  const alertTime = new Date();
+                  alertTime.setMinutes(alertTime.getMinutes() - (demoPassengers.length - index) * 15);
+                  
+                  addRideAlert({
+                      id: `alert-${Date.now()}-${index}`,
+                      type: 'ride',
+                      message: `Ride request from ${passenger} at ${demoLocations[index]}`,
+                      time: alertTime.toISOString(),
+                      read: index > 2, // Mark some as read
+                      passenger,
+                      location: demoLocations[index],
+                      distance: (Math.random() * 10 + 2).toFixed(1)
+                  });
+              });
+          }
+      }
+
+      async function initApp() {
+          // Check if Web3 is injected (MetaMask)
+          if (window.ethereum) {
+              try {
+                  // Request account access
+                  await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  web3 = new Web3(window.ethereum);
+
+                  // Initialize contract
+                  contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+                  // Get current account
+                  const accounts = await web3.eth.getAccounts();
+                  currentAccount = accounts[0];
+
+                  // Initialize IPFS with fallback
+                  try {
+                      // Load IPFS HTTP client library dynamically
+                      if (!window.IpfsHttpClient) {
+                          const script = document.createElement('script');
+                          script.src = 'https://cdn.jsdelivr.net/npm/ipfs-http-client/dist/index.min.js';
+                          script.onload = async () => {
+                              try {
+                                  ipfs = await initIPFS();
+                              } catch (ipfsError) {
+                                  console.warn("IPFS initialization warning:", ipfsError);
+                              }
+                          };
+                          document.head.appendChild(script);
+                      } else {
+                          ipfs = await initIPFS();
+                      }
+                  } catch (ipfsError) {
+                      console.warn("IPFS initialization warning:", ipfsError);
+                  }
+
+                  // Handle account changes
+                  window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+                  // Request notification permission
+                  if (Notification.permission !== 'granted') {
+                      Notification.requestPermission();
+                  }
+
+              } catch (error) {
+                  console.error("Web3 initialization error:", error);
+                  throw error;
+              }
+          } else {
+              throw new Error("Please install MetaMask to use this application.");
+          }
+      }
+
+      // Initialize local IPFS node
+      async function initIPFS() {
+          try {
+              // Create IPFS client
+              const ipfsClient = await window.IpfsHttpClient.create({
+                  host: '127.0.0.1',
+                  port: 5001,
+                  protocol: 'http'
+              });
+
+              // Verify connection
+              const version = await ipfsClient.version();
+              console.log("Connected to IPFS node version:", version.version);
+              return ipfsClient;
+          } catch (error) {
+              console.error("IPFS initialization error:", error);
+              throw new Error("Failed to connect to local IPFS node. Please ensure it's running on port 5001.");
+          }
+      }
+
+      // Load driver data from blockchain and IPFS
+      async function loadDriverData() {
+          try {
+              // Check if we have a session
+              const session = localStorage.getItem('driverSession');
+              if (!session) {
+                  window.location.href = "driverLogin.html";
+                  return;
+              }
+
+              const { email, walletAddress } = JSON.parse(session);
+              
+              // Verify wallet is still connected
+              const accounts = await web3.eth.getAccounts();
+              if (accounts[0].toLowerCase() !== walletAddress.toLowerCase()) {
+                  localStorage.removeItem('driverSession');
+                  window.location.href = "driverLogin.html";
+                  return;
+              }
+
+              // Get driver data from blockchain
+              const driver = await contract.methods.getDriverByEmail(email)
+                  .call({ from: currentAccount });
+              
+              // Get additional data from IPFS if available
+              let ipfsData = {};
+              if (driver[7] && driver[7] !== "") {
+                  try {
+                      if (ipfs) {
+                          ipfsData = await fetchIPFSData(driver[7]);
+                      }
+                      console.log("IPFS data loaded:", ipfsData);
+                      
+                      // If IPFS node isn't available, try fetching via HTTP gateway as fallback
+                      if (!ipfsData || Object.keys(ipfsData).length === 0) {
+                          ipfsData = await fetchIPFSViaGateway(driver[7]);
+                      }
+                      
+                      // Display images from IPFS data
+                      if (ipfsData.licensePicture) {
+                          console.log("Found license picture in IPFS data");
+                          document.getElementById('licenseImage').src = ipfsData.licensePicture;
+                      } else {
+                          console.log("No license picture found in IPFS data");
+                          document.getElementById('licenseImage').src = "https://via.placeholder.com/600x400?text=No+License+Uploaded";
+                      }
+                      
+                      if (ipfsData.vehiclePicture) {
+                          console.log("Found vehicle picture in IPFS data");
+                          document.getElementById('vehicleImage').src = ipfsData.vehiclePicture;
+                      } else {
+                          console.log("No vehicle picture found in IPFS data");
+                          document.getElementById('vehicleImage').src = "https://via.placeholder.com/600x400?text=No+Vehicle+Uploaded";
+                      }
+                  } catch (ipfsError) {
+                      console.warn("IPFS data fetch warning:", ipfsError);
+                      // Try fallback HTTP gateway
+                      try {
+                          ipfsData = await fetchIPFSViaGateway(driver[7]);
+                          if (ipfsData.licensePicture) {
+                              document.getElementById('licenseImage').src = ipfsData.licensePicture;
+                          }
+                          if (ipfsData.vehiclePicture) {
+                              document.getElementById('vehicleImage').src = ipfsData.vehiclePicture;
+                          }
+                      } catch (gatewayError) {
+                          console.warn("IPFS gateway fetch warning:", gatewayError);
+                          // If still can't load, show placeholder with error message
+                          document.getElementById('licenseImage').src = "https://via.placeholder.com/600x400?text=License+Not+Found";
+                          document.getElementById('vehicleImage').src = "https://via.placeholder.com/600x400?text=Vehicle+Not+Found";
+                      }
+                  }
+              } else {
+                  // No IPFS hash available
+                  console.log("No IPFS hash found in blockchain data");
+                  document.getElementById('licenseImage').src = "https://via.placeholder.com/600x400?text=No+License+Uploaded";
+                  document.getElementById('vehicleImage').src = "https://via.placeholder.com/600x400?text=No+Vehicle+Uploaded";
+              }
+              
+              // Combine blockchain and IPFS data
+              driverData = {
+                  email: driver[0],
+                  passwordHash: driver[1],
+                  phone: driver[2],
+                  cnic: driver[3],
+                  licenseNumber: driver[4],
+                  vehicleNumber: driver[5],
+                  address: driver[6],
+                  ipfsHash: driver[7],
+                  walletAddress: driver[8],
+                  // IPFS data
+                  ...ipfsData
+              };
+
+              // Update UI with driver data
+              updateProfileUI();
+              
+          } catch (error) {
+              console.error("Error loading driver data:", error);
+              throw new Error("Failed to load driver data. Please try again.");
+          }
+      }
+
+
+      // Fetch data from IPFS via HTTP gateway as fallback
+      async function fetchIPFSViaGateway(ipfsHash) {
+          try {
+              const response = await fetch(`http://127.0.0.1:8080/ipfs/${ipfsHash}`);
+              if (!response.ok) throw new Error("Failed to fetch from gateway");
+              return await response.json();
+          } catch (error) {
+              console.error("IPFS gateway fetch error:", error);
+              throw error;
+          }
+      }
+
+      function updateProfileUI() {
+          if (!driverData) return;
+
+          // Helper function to safely set element content
+          const setTextContent = (id, text) => {
+              const element = document.getElementById(id);
+              if (element) element.textContent = text || "N/A";
+          };
+
+          // Helper function to safely set image source
+          const setImageSource = (id, src, fallback) => {
+              const element = document.getElementById(id);
+              if (element) element.src = src || fallback;
+          };
+
+          // Set default images
+          const defaultProfileImage = "https://via.placeholder.com/150";
+          const defaultLicenseImage = "https://via.placeholder.com/600x400?text=License+Image";
+          const defaultVehicleImage = "https://via.placeholder.com/600x400?text=Vehicle+Image";
+
+          // Update text content
+          setTextContent('profileName', driverData.driverName || "Driver");
+          setTextContent('headerProfileName', driverData.driverName || "Driver");
+          setTextContent('detailFullName', driverData.driverName || "N/A");
+          setTextContent('detailEmail', driverData.email || "N/A");
+          setTextContent('detailPhone', driverData.phone || "N/A");
+          setTextContent('detailCnic', driverData.cnic || "N/A");
+          setTextContent('detailAddress', driverData.address || "N/A");
+          setTextContent('detailLicense', driverData.licenseNumber || "N/A");
+          setTextContent('detailVehicle', driverData.vehicleNumber || "N/A");
+          setTextContent('detailVehicleType', driverData.vehicleType || "N/A");
+          
+          // Vehicle information
+          setTextContent('vehicleMake', driverData.vehicleMake || "N/A");
+          setTextContent('vehicleModel', driverData.vehicleModel || "N/A");
+          setTextContent('vehicleYear', driverData.vehicleYear || "N/A");
+          setTextContent('vehicleColor', driverData.vehicleColor || "N/A");
+          setTextContent('vehiclePlate', driverData.vehicleNumber || "N/A");
+          setTextContent('vehicleType', driverData.vehicleType || "N/A");
+
+          // Format date of birth if available
+          if (driverData.dob) {
+              const dob = new Date(driverData.dob);
+              setTextContent('detailDob', dob.toLocaleDateString('en-US', {
+                  year: 'numeric', month: 'long', day: 'numeric'
+              }));
+          }
+
+          // Format gender if available
+          if (driverData.gender) {
+              const genderMap = {
+                  'male': 'Male',
+                  'female': 'Female',
+                  'other': 'Other'
+              };
+              setTextContent('detailGender', genderMap[driverData.gender] || "N/A");
+          }
+
+          // Set profile image if available
+          const profileImage = driverData.profileImage || defaultProfileImage;
+          setImageSource('profileImage', profileImage);
+          setImageSource('headerProfileImage', profileImage);
+          
+          // Set license image if available
+          setImageSource('licenseImage', driverData.licenseImage || defaultLicenseImage);
+
+          // Set vehicle image if available
+          setImageSource('vehicleImage', driverData.vehicleImage || defaultVehicleImage);
+
+          // Set bio if available
+          if (driverData.bio) {
+              setTextContent('profileBio', driverData.bio);
+          }
+      }
+
+      // Fetch data from local IPFS node
+      async function fetchIPFSData(ipfsHash) {
+          try {
+              let content = '';
+
+              // Fetch the content from IPFS
+              for await (const chunk of ipfs.cat(ipfsHash)) {
+                  content += new TextDecoder().decode(chunk);
+              }
+
+              return JSON.parse(content);
+          } catch (error) {
+              console.error("IPFS fetch error:", error);
+              throw new Error("Failed to fetch IPFS data");
+          }
+      }
+
+      // Set up all event listeners
+      function setupEventListeners() {
+          // Sidebar toggle
+          document.getElementById('menuToggle').addEventListener('click', () => {
+              document.getElementById('sidebar').classList.toggle('active');
+          });
+
+          // Tab switching
+          document.querySelectorAll('.menu-item').forEach(item => {
+              item.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  const tabId = this.getAttribute('data-tab');
+                  switchTab(tabId);
+              });
+          });
+
+          // Profile dropdown items
+          document.querySelectorAll('.dropdown-item[data-tab]').forEach(item => {
+              item.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  const tabId = this.getAttribute('data-tab');
+                  switchTab(tabId);
+              });
+          });
+
+          // Ride alerts icon
+          document.getElementById('rideAlertsIcon').addEventListener('click', function(e) {
+              e.preventDefault();
+              switchTab('ride-alerts');
+          });
+
+          // Handle alert actions
+          document.addEventListener('click', function(e) {
+              if (e.target.classList.contains('accept-btn')) {
+                  const alertId = e.target.getAttribute('data-id');
+                  markAlertAsRead(alertId);
+                  alert('Ride accepted!');
+              } else if (e.target.classList.contains('reject-btn')) {
+                  const alertId = e.target.getAttribute('data-id');
+                  markAlertAsRead(alertId);
+                  alert('Ride rejected.');
+              }
+          });
+
+          // Settings toggles
+          document.getElementById('twoFactorToggle').addEventListener('change', function() {
+              settings.twoFactorAuth = this.checked;
+              saveData();
+          });
+
+          document.getElementById('rideRequestsToggle').addEventListener('change', function() {
+              settings.rideRequests = this.checked;
+              saveData();
+          });
+
+          document.getElementById('messagesToggle').addEventListener('change', function() {
+              settings.messages = this.checked;
+              saveData();
+          });
+
+          document.getElementById('promotionsToggle').addEventListener('change', function() {
+              settings.promotions = this.checked;
+              saveData();
+          });
+
+          document.getElementById('darkModeToggle').addEventListener('change', function() {
+              settings.darkMode = this.checked;
+              saveData();
+              updateSettingsUI();
+          });
+
+          document.getElementById('fontSizeSelect').addEventListener('change', function() {
+              settings.fontSize = this.value;
+              saveData();
+              updateSettingsUI();
+          });
+
+          document.getElementById('profileVisibilityToggle').addEventListener('change', function() {
+              settings.profileVisibility = this.checked;
+              saveData();
+          });
+
+          document.getElementById('locationSharingToggle').addEventListener('change', function() {
+              settings.locationSharing = this.checked;
+              saveData();
+          });
+
+          document.getElementById('tripHistoryToggle').addEventListener('change', function() {
+              settings.tripHistory = this.checked;
+              saveData();
+          });
+
+          // Settings buttons
+          document.getElementById('changePasswordBtn').addEventListener('click', function() {
+              alert('Password change functionality would be implemented here');
+          });
+
+          document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+              if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
+                  alert('Account deletion functionality would be implemented here');
+              }
+          });
+
+          document.getElementById('termsBtn').addEventListener('click', function() {
+              alert('Terms of service would be displayed here');
+          });
+
+          document.getElementById('privacyBtn').addEventListener('click', function() {
+              alert('Privacy policy would be displayed here');
+          });
+
+          // Logout
+          document.getElementById('logoutBtn').addEventListener('click', logout);
+          
+          // Manual earnings update (for demo purposes)
+          document.getElementById('totalEarnings').addEventListener('click', function() {
+              const newEarnings = parseFloat(prompt("Update your total earnings:", totalEarnings.toFixed(2)));
+              if (!isNaN(newEarnings)) {
+                  totalEarnings = newEarnings;
+                  saveData();
+                  updateDashboardMetrics();
+              }
+          });
+          
+          // Simulate a new trip (for demo purposes)
+          document.getElementById('completedTrips').addEventListener('click', function() {
+              const passenger = prompt("Passenger name:", "New Passenger");
+              if (passenger) {
+                  const pickup = prompt("Pickup location:", "123 Main St");
+                  const dropoff = prompt("Dropoff location:", "Central Park");
+                  const distance = parseFloat(prompt("Trip distance (km):", "5.0"));
+                  const fare = parseFloat(prompt("Trip fare:", "10.00"));
+                  
+                  if (!isNaN(distance) && !isNaN(fare)) {
+                      addCompletedTrip({
+                          id: `#TR-${Math.floor(10000 + Math.random() * 90000)}`,
+                          date: new Date().toISOString(),
+                          passenger,
+                          pickup,
+                          dropoff,
+                          distance,
+                          fare
+                      });
+                  }
+              }
+          });
+          
+          // Simulate a new rating (for demo purposes)
+          document.getElementById('driverRating').addEventListener('click', function() {
+              const rating = parseFloat(prompt("New rating (1-5):", "5.0"));
+              if (!isNaN(rating)) {
+                  addRating(Math.min(5, Math.max(1, rating)));
+              }
+          });
+          
+          // Simulate a new ride alert (for demo purposes)
+          document.getElementById('alertsBadge').addEventListener('click', function(e) {
+              e.stopPropagation();
+              const passenger = prompt("Passenger name:", "New Rider");
+              if (passenger) {
+                  const location = prompt("Pickup location:", "Downtown");
+                  const distance = (Math.random() * 10 + 2).toFixed(1);
+                  
+                  addRideAlert({
+                      id: `alert-${Date.now()}`,
+                      type: 'ride',
+                      message: `Ride request from ${passenger} at ${location}`,
+                      time: new Date().toISOString(),
+                      read: false,
+                      passenger,
+                      location,
+                      distance
+                  });
+              }
+          });
+      }
+
+      function switchTab(tabId) {
+          // Update active menu item
+          document.querySelectorAll('.menu-item').forEach(item => {
+              item.classList.remove('active');
+              if (item.getAttribute('data-tab') === tabId) {
+                  item.classList.add('active');
+              }
+          });
+
+          // Update active tab content
+          document.querySelectorAll('.tab-content').forEach(content => {
+              content.classList.remove('active');
+              if (content.id === `${tabId}-tab`) {
+                  content.classList.add('active');
+              }
+          });
+
+          // Close sidebar on mobile
+          if (window.innerWidth < 992) {
+              document.getElementById('sidebar').classList.remove('active');
+          }
+          
+          // Mark all alerts as read when viewing alerts tab
+          if (tabId === 'ride-alerts') {
+              rideAlerts.forEach(alert => alert.read = true);
+              saveData();
+              updateDashboardMetrics();
+          }
+      }
+
+      // Handle account changes
+      function handleAccountsChanged(accounts) {
+          if (accounts.length === 0) {
+              // MetaMask is locked or user disconnected all accounts
+              currentAccount = null;
+          } else {
+              currentAccount = accounts[0];
+          }
+      }
+
+      // Logout user
+      function logout() {
+          // Clear active hours tracking
+          clearInterval(activeHoursInterval);
+          
+          localStorage.removeItem('driverSession');
+          window.location.href = "driverLogin.html";
+      }
+    </script>
+  </body>
+</html>
